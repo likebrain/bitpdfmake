@@ -101,6 +101,13 @@ TableProcessor.prototype.drawHorizontalLine = function(lineIndex, writer, overri
     for(var i = 0, l = this.rowSpanData.length; i < l; i++) {
       var data = this.rowSpanData[i];
       var shouldDrawLine = !data.rowSpan;
+	  
+	  if (this.tableNode.table.borderLines !== undefined) {
+		var borderLines = this.tableNode.table.borderLines[lineIndex];
+		if (borderLines && borderLines[i] !== undefined) {
+			shouldDrawLine = borderLines[i];   
+		}
+	  }
 
       if (!currentLine && shouldDrawLine) {
         currentLine = { left: data.left, width: 0 };
@@ -205,7 +212,14 @@ TableProcessor.prototype.endRow = function(rowIndex, writer, pageBreaks) {
       }
 
       for(i = 0, l = xs.length; i < l; i++) {
-        this.drawVerticalLine(xs[i].x, y1 - hzLineOffset, y2 + this.bottomLineWidth, xs[i].index, writer);
+		var shouldDrawCol = true;
+		if (this.tableNode.table.borderCols !== undefined) {
+		  var borderCols = this.tableNode.table.borderCols[rowIndex];
+		  if (borderCols && borderCols[i] !== undefined) {
+			shouldDrawCol = borderCols[i];   
+		  }
+		}
+		if (shouldDrawCol) { this.drawVerticalLine(xs[i].x, y1 - hzLineOffset, y2 + this.bottomLineWidth, xs[i].index, writer); }
         if(i < l-1) {
           var colIndex = xs[i].index;
           var fillColor=  this.tableNode.table.body[rowIndex][colIndex].fillColor;
