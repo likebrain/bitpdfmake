@@ -190,6 +190,22 @@ TableProcessor.prototype.endRow = function(rowIndex, writer, pageBreaks) {
     }
 
     ys[ys.length - 1].y1 = endingY;
+	
+	var rowObjs = this.tableNode.table.body[rowIndex];
+	for (var j = 0; j < rowObjs.length; j++) {
+		var rowObj = rowObjs[j];
+		if (rowObj._valignment !== undefined) {
+			switch (rowObj._valignment) {
+				case 'middle':
+					var start = rowObj.y - this.rowPaddingTop;
+					rowObj.y = start + ((endingY - start) / 2 - rowObj._height / 2);
+					break;
+				case 'bottom':
+					rowObj.y = endingY - rowObj._height - this.rowPaddingBottom;
+					break;
+			}
+		}
+	}
 
     var skipOrphanePadding = (ys[0].y1 - ys[0].y0 === this.rowPaddingTop);
     for(var yi = (skipOrphanePadding ? 1 : 0), yl = ys.length; yi < yl; yi++) {

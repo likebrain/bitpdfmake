@@ -177,6 +177,7 @@ DocMeasure.prototype.measureImage = function(node) {
 	}
 
 	node._alignment = this.styleStack.getProperty('alignment');
+	node._valignment = this.styleStack.getProperty('valignment');
 	return node;
 };
 
