@@ -5,6 +5,7 @@
 
 var PdfPrinter = require('../printer');
 var FileSaver = require('../../libs/FileSaver.js/FileSaver');
+var HTMLBuilder = require('../HTMLBuilder');
 var saveAs = FileSaver.saveAs;
 
 var defaultClientFonts = {
@@ -135,6 +136,10 @@ Document.prototype.getBuffer = function(cb, options) {
 
 module.exports = {
 	createPdf: function(docDefinition) {
+        if (typeof docDefinition.html !== 'undefined' && docDefinition.html) {
+            var builder = new HTMLBuilder();
+            builder.setDocumentDefinition(docDefinition);   
+        }
 		return new Document(docDefinition, window.pdfMake.fonts, window.pdfMake.vfs);
 	}
 };
