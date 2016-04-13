@@ -52,10 +52,10 @@ function HTMLBuilder() {
 	 * Get document definition text node of pdfmake from HTML tag
      * 
 	 * @param {object} inner Contains node object to process
-	 * @param {function} action Contains HTML tag node function
+	 * @param {array} actions Contains array of HTML tag node functions
 	 * @return {object} Returns pdfmake node with text content
 	 */
-	var getTextFromInner = function(inner, action) {
+	var getTextFromInner = function(inner, actions) {
         if (inner === undefined || inner === null || inner === '') {
             return undefined;
         }
@@ -68,8 +68,10 @@ function HTMLBuilder() {
                 var iText = inner[keys[i]];
                 if (iText.trim() !== '') {
                     var node = { text: iText };
-                    if (action) {
-                        action(node);
+                    if (actions) {
+                        for (var j = 0; j < actions.length; j++) {
+                            actions[j](node); 
+                        }
                     }
                     arr.push(node);   
                 }
@@ -78,7 +80,12 @@ function HTMLBuilder() {
                 var objInner = inner[keys[i]];
                 var task = getHTMLActionByNodeType(objInner.nodeType);
                 if (task) {
-                    arr = arr.concat(getTextFromInner(objInner.inner, task));
+                    if (actions === undefined) {
+                        actions = [];
+                    }
+                    actions.push(task);
+                    arr = arr.concat(getTextFromInner(objInner.inner, actions));
+                    actions = [];
                 }
             }
         }
