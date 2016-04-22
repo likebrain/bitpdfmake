@@ -31,6 +31,14 @@ DocMeasure.prototype.measureDocument = function(docStructure) {
 };
 
 DocMeasure.prototype.measureNode = function(node) {
+	function hasUndefinedNodeValue(nodeType) {
+		return node.hasOwnProperty(nodeType) && node[nodeType] === undefined;
+	}
+	
+	if (node === undefined || hasUndefinedNodeValue('text') || hasUndefinedNodeValue('image')) {
+		node = '';
+	}
+	
 	// expand shortcuts
 	if (node instanceof Array) {
 		node = { stack: node };
@@ -307,6 +315,9 @@ DocMeasure.prototype.measureTable = function(node) {
 		for(row = 0, rows = node.table.body.length; row < rows; row++) {
 			var rowData = node.table.body[row];
 			var data = rowData[col];
+			if (data === undefined) {
+				data = '';
+			}
 			if (!data._span) {
 				var _this = this;
 				data = rowData[col] = this.styleStack.auto(data, measureCb(this, data));
