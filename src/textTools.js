@@ -154,8 +154,11 @@ function normalizeTextArray(array) {
 		if (typeof item == 'string' || item instanceof String) {
 			words = splitWords(item);
 		} else {
-			if (item === undefined) {
+			if (item === undefined || item === null) {
 				item = { text: '' };
+			}
+			if (!isNaN(item)) {
+				item = { text: item + '' };
 			}
 			words = splitWords(item.text, item.noWrap);
 			style = copyStyle(item);

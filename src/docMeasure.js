@@ -32,18 +32,18 @@ DocMeasure.prototype.measureDocument = function(docStructure) {
 
 DocMeasure.prototype.measureNode = function(node) {
 	function hasUndefinedNodeValue(nodeType) {
-		return node.hasOwnProperty(nodeType) && node[nodeType] === undefined;
+		return node.hasOwnProperty(nodeType) && (node[nodeType] === undefined || node[nodeType] === null);
 	}
 	
-	if (node === undefined || hasUndefinedNodeValue('text') || hasUndefinedNodeValue('image')) {
+	if (node === undefined || node === null || hasUndefinedNodeValue('text') || hasUndefinedNodeValue('image')) {
 		node = '';
 	}
 	
 	// expand shortcuts
 	if (node instanceof Array) {
 		node = { stack: node };
-	} else if (typeof node == 'string' || node instanceof String) {
-		node = { text: node };
+	} else if (typeof node == 'string' || node instanceof String || !isNaN(node)) {
+		node = { text: node + '' };
 	}
 	
 	// Deal with empty nodes to prevent crash in getNodeMargin
@@ -315,8 +315,11 @@ DocMeasure.prototype.measureTable = function(node) {
 		for(row = 0, rows = node.table.body.length; row < rows; row++) {
 			var rowData = node.table.body[row];
 			var data = rowData[col];
-			if (data === undefined) {
+			if (data === undefined || data === null) {
 				data = '';
+			}
+			if (!isNaN(data)) {
+				data = data + '';
 			}
 			if (!data._span) {
 				var _this = this;
