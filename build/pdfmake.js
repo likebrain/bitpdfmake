@@ -2108,7 +2108,7 @@
 	    builder.registerTableLayouts(options.tableLayouts);
 	  }
 
-		var pages = builder.layoutDocument(docDefinition.content, this.fontProvider, docDefinition.styles || {}, docDefinition.defaultStyle || { fontSize: 12, font: 'Roboto' }, docDefinition.background, docDefinition.header, docDefinition.footer, docDefinition.images, docDefinition.watermark, docDefinition.pageBreakBefore);
+		var pages = builder.layoutDocument(docDefinition.content, this.fontProvider, docDefinition.styles || {}, docDefinition.defaultStyle || { fontSize: 12, font: 'Roboto' }, docDefinition.background, docDefinition.header, docDefinition.footer, docDefinition.images, docDefinition.watermark, docDefinition.pageBreakBefore, docDefinition.splitInlineText);
 
 		renderPages(pages, this.fontProvider, this.pdfKitDoc);
 
@@ -14991,7 +14991,7 @@
 	 * @param {Object} defaultStyle default style definition
 	 * @return {Array} an array of pages
 	 */
-	LayoutBuilder.prototype.layoutDocument = function (docStructure, fontProvider, styleDictionary, defaultStyle, background, header, footer, images, watermark, pageBreakBeforeFct) {
+	LayoutBuilder.prototype.layoutDocument = function (docStructure, fontProvider, styleDictionary, defaultStyle, background, header, footer, images, watermark, pageBreakBeforeFct, splitInlineText) {
 
 	  function addPageBreaksIfNecessary(linearNodeList, pages) {
 
@@ -15045,7 +15045,7 @@
 	    });
 	  }
 
-	  this.docMeasure = new DocMeasure(fontProvider, styleDictionary, defaultStyle, this.imageMeasure, this.tableLayouts, images);
+	  this.docMeasure = new DocMeasure(fontProvider, styleDictionary, defaultStyle, this.imageMeasure, this.tableLayouts, images, splitInlineText);
 
 
 	  function resetXYs(result) {
@@ -15612,13 +15612,14 @@
 	/**
 	* @private
 	*/
-	function DocMeasure(fontProvider, styleDictionary, defaultStyle, imageMeasure, tableLayouts, images) {
+	function DocMeasure(fontProvider, styleDictionary, defaultStyle, imageMeasure, tableLayouts, images, splitInlineText) {
 		this.textTools = new TextTools(fontProvider);
 		this.styleStack = new StyleContextStack(styleDictionary, defaultStyle);
 		this.imageMeasure = imageMeasure;
 		this.tableLayouts = tableLayouts;
 		this.images = images;
 		this.autoImageIndex = 1;
+		this.splitInlineText = splitInlineText;
 	}
 
 	/**
@@ -15791,7 +15792,9 @@
 	};
 
 	DocMeasure.prototype.measureLeaf = function(node) {
-
+		if (this.splitInlineText) {
+			node.text = this.textTools.splitInlineText(node.text);	
+		}
 		// Make sure style properties of the node itself are considered when building inlines.
 		// We could also just pass [node] to buildInlines, but that fails for bullet points.
 		var styleStack = this.styleStack.clone();
@@ -16393,6 +16396,81 @@
 		});
 
 		return normalized;
+	}
+
+	/**
+	 * Gets the occurences of string value
+	 * 
+	 * @param {string} value Contains string value
+	 * @returns {array} Returns array of character occurences 
+	 */
+	function getCharacterOccurrences(value) {
+		var characters = [];
+		for (var i = 0; i < value.length; i++) {
+			var char = value[i];
+			if (!characters[char]) {
+				characters[char] = 1;
+			} else {
+				characters[char] += 1;
+			}
+		}
+		return characters;
+	}
+
+	/**
+	 * Gets the length of object properties
+	 * 
+	 * @param {object} obj Contains object instance
+	 * @param {numeric} Returns length of object properties
+	 */
+	function getObjectLength(obj) {
+		var result = 0;
+		for (var prop in obj) {
+			if (obj.hasOwnProperty(prop)) {
+				result++;
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Gets if value is specified type
+	 * 
+	 * @param {object} value Contains validation value
+	 * @param {string} type Contains type of value
+	 * @returns {boolean} Returns if value is specified type
+	 */
+	function isType(value, type) {
+		return typeof(value) === type;
+	}
+
+	/**
+	 * Gets splited inline text values to prevent pdfmake exception
+	 * 
+	 * @param {string} value Contains inline text value
+	 * @param {array} Returns array with splited inline text values
+	 */
+	TextTools.prototype.splitInlineText = function(value) {
+		var maxLength = 92;
+		var isString = isType(value, 'string');
+		if (value && !(isString && value.length <= maxLength)) {
+			var result = [];
+			if (isString) {
+				value = [ value ];
+			}
+			for (var i = 0; i < value.length; i++) {
+				var item = value[i];
+				var length = getObjectLength(getCharacterOccurrences(item));
+				if (length <= maxLength) {
+					result.push(item);
+				} else {
+					var items = this.splitInlineText(item.match(new RegExp('.{1,' + Math.ceil(item.length / 2) + '}', 'g')));
+					result = result.concat(items);
+				}
+			}
+			return result;
+		}
+		return value;
 	}
 
 	/****TESTS**** (add a leading '/' to uncomment)
