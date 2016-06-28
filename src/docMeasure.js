@@ -11,13 +11,14 @@ var qrEncoder = require('./qrEnc.js');
 /**
 * @private
 */
-function DocMeasure(fontProvider, styleDictionary, defaultStyle, imageMeasure, tableLayouts, images) {
+function DocMeasure(fontProvider, styleDictionary, defaultStyle, imageMeasure, tableLayouts, images, splitInlineText) {
 	this.textTools = new TextTools(fontProvider);
 	this.styleStack = new StyleContextStack(styleDictionary, defaultStyle);
 	this.imageMeasure = imageMeasure;
 	this.tableLayouts = tableLayouts;
 	this.images = images;
 	this.autoImageIndex = 1;
+	this.splitInlineText = splitInlineText;
 }
 
 /**
@@ -190,7 +191,9 @@ DocMeasure.prototype.measureImage = function(node) {
 };
 
 DocMeasure.prototype.measureLeaf = function(node) {
-
+	if (this.splitInlineText) {
+		node.text = this.textTools.splitInlineText(node.text);	
+	}
 	// Make sure style properties of the node itself are considered when building inlines.
 	// We could also just pass [node] to buildInlines, but that fails for bullet points.
 	var styleStack = this.styleStack.clone();

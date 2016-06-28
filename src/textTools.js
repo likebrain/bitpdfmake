@@ -263,6 +263,81 @@ function measure(fontProvider, textArray, styleContextStack) {
 	return normalized;
 }
 
+/**
+ * Gets the occurences of string value
+ * 
+ * @param {string} value Contains string value
+ * @returns {array} Returns array of character occurences 
+ */
+function getCharacterOccurrences(value) {
+	var characters = [];
+	for (var i = 0; i < value.length; i++) {
+		var char = value[i];
+		if (!characters[char]) {
+			characters[char] = 1;
+		} else {
+			characters[char] += 1;
+		}
+	}
+	return characters;
+}
+
+/**
+ * Gets the length of object properties
+ * 
+ * @param {object} obj Contains object instance
+ * @param {numeric} Returns length of object properties
+ */
+function getObjectLength(obj) {
+	var result = 0;
+	for (var prop in obj) {
+		if (obj.hasOwnProperty(prop)) {
+			result++;
+		}
+	}
+	return result;
+}
+
+/**
+ * Gets if value is specified type
+ * 
+ * @param {object} value Contains validation value
+ * @param {string} type Contains type of value
+ * @returns {boolean} Returns if value is specified type
+ */
+function isType(value, type) {
+	return typeof(value) === type;
+}
+
+/**
+ * Gets splited inline text values to prevent pdfmake exception
+ * 
+ * @param {string} value Contains inline text value
+ * @param {array} Returns array with splited inline text values
+ */
+TextTools.prototype.splitInlineText = function(value) {
+	var maxLength = 92;
+	var isString = isType(value, 'string');
+	if (value && !(isString && value.length <= maxLength)) {
+		var result = [];
+		if (isString) {
+			value = [ value ];
+		}
+		for (var i = 0; i < value.length; i++) {
+			var item = value[i];
+			var length = getObjectLength(getCharacterOccurrences(item));
+			if (length <= maxLength) {
+				result.push(item);
+			} else {
+				var items = this.splitInlineText(item.match(new RegExp('.{1,' + Math.ceil(item.length / 2) + '}', 'g')));
+				result = result.concat(items);
+			}
+		}
+		return result;
+	}
+	return value;
+}
+
 /****TESTS**** (add a leading '/' to uncomment)
 TextTools.prototype.splitWords = splitWords;
 TextTools.prototype.normalizeTextArray = normalizeTextArray;

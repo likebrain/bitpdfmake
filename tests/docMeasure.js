@@ -40,6 +40,9 @@ describe('DocMeasure', function() {
 				buildInlines: function() {
 					called = true;
 					return { items: [ 'abc' ], minWidth: 1, maxWidth: 10 };
+				},
+				splitInlineText: function(value) {
+					return value;
 				}
 			};
 
