@@ -255,10 +255,13 @@ function HTMLBuilder() {
      */
     var processDocumentDefinition = function(content) {
         for (var i = 0; i < content.length; i++) {
-            if (typeof content[i] === 'object') {
+            if (content[i] && typeof content[i] === 'object') {
                 var html = content[i].html; 
-                if (typeof html !== 'undefined') {
+                if (content[i].hasOwnProperty('html') || typeof html !== 'undefined') {
                     var stack = getDocumentDefinitionFromHtmlMarkup(html, content[i].settings || {});
+                    if (!stack) {
+                        stack = { text: '' };
+                    }
                     copyPropertiesToTargetStack(content[i], stack);
                     content[i] = stack;
                 }
