@@ -177,13 +177,14 @@ function HTMLBuilder() {
 		}
 		
 		function getAttributes(node) {
-			var attrs = node.attributes;
 			var json_attrs = [];
-			for (var i = 0; i < attrs.length; i++) {
-				var attr = attrs[i];
-				json_attrs.push({ name: attr.name, value: attr.nodeValue });
+			var attrs = node.attributes;
+			if (attrs) {
+				for (var i = 0; i < attrs.length; i++) {
+					var attr = attrs[i];
+					json_attrs.push({ name: attr.name, value: attr.nodeValue });
+				}	
 			}
-			
 			return json_attrs;
 		}
         
