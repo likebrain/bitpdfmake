@@ -97451,13 +97451,13 @@
 	    };
 	    
 	    /**
-		 * Get document definition text node of pdfmake from HTML tag
+	     * Get document definition text node of pdfmake from HTML tag
 	     * 
-		 * @param {object} inner Contains node object to process
-		 * @param {array} actions Contains array of HTML tag node functions
-		 * @return {object} Returns pdfmake node with text content
-		 */
-		var getTextFromInner = function(inner, actions) {
+	     * @param {object} inner Contains node object to process
+	     * @param {array} actions Contains array of HTML tag node functions
+	     * @return {object} Returns pdfmake node with text content
+	     */
+	    var getTextFromInner = function(inner, actions) {
 	        if (inner === undefined || inner === null || inner === '') {
 	            return undefined;
 	        }
@@ -97495,20 +97495,20 @@
 	        return arr;
 	    };
 	    
-		/**
-		 * Gets pdfmake text element from tag element with wrapper like <li><p>...</p></li>
+	    /**
+	     * Gets pdfmake text element from tag element with wrapper like <li><p>...</p></li>
 	     * 
-		 * @param {object} inner Contains node object to process
-		 * @return {object} Returns array of pdfmake text elements
-		 */
-		var getTextFromInnerWrapperElementList = function(inner) {
+	     * @param {object} inner Contains node object to process
+	     * @return {object} Returns array of pdfmake text elements
+	     */
+	    var getTextFromInnerWrapperElementList = function(inner) {
 	        var keys = Object.keys(inner);
 	        var listOfTextValues = [];
 	        
 	        for (var i = 0; i < keys.length; i++) {
 	            var iText = getTextFromInner(inner[keys[i]].inner);
 	            if (iText !== undefined && iText !== null) {
-	                listOfTextValues.push(iText);					
+	                listOfTextValues.push(iText);
 	            }
 	        }
 	        
@@ -97546,81 +97546,82 @@
 	        return item;
 	    };
 	    
-		/**
-		 * Processes HTML markup to json object
+	    /**
+	     * Processes HTML markup to json object
 	     * 
-		 * @param {string} markup Contains HTML markup for document definition of pdfmake
-		 * @return {object} Returns converted json object of HTMLL markup
-		 */
-		var HTML2JSON = function(markup) {
-			var html = document.createElement('html');
-			html.innerHTML = '<div>' + markup + '</div>';
-			var html_childs = html.childNodes;
-			
-			function GetNodes(children) {
-				var obj = {};
-				for (var i = 0; i < children.length; i++) {
-					var node = children[i];
-					var node_val = {};
-					node_val = {
-						nodeType : node.nodeName
-					};
-					
-					if (node.nodeName === "#text") {
-						node_val = node.data;	
-					} 
+	     * @param {string} markup Contains HTML markup for document definition of pdfmake
+	     * @return {object} Returns converted json object of HTMLL markup
+	     */
+	    var HTML2JSON = function(markup) {
+	        var html = document.createElement('html');
+	        html.innerHTML = '<div>' + markup + '</div>';
+	        var html_childs = html.childNodes;
+	        
+	        function GetNodes(children) {
+	            var obj = {};
+	            for (var i = 0; i < children.length; i++) {
+	                var node = children[i];
+	                var node_val = {};
+	                node_val = {
+	                    nodeType : node.nodeName
+	                };
+	                
+	                if (node.nodeName === "#text") {
+	                    node_val = node.data;
+	                }
 	                else {
-						node_val.inner = GetNodes(node.childNodes);
-						node_val.attributes = getAttributes(node);				
-					}		
-					obj[i] = node_val;
-				}
-				return obj === {} ? undefined : obj;
-			}
-			
-			function getAttributes(node) {
-				var attrs = node.attributes;
-				var json_attrs = [];
-				for (var i = 0; i < attrs.length; i++) {
-					var attr = attrs[i];
-					json_attrs.push({ name: attr.name, value: attr.nodeValue });
-				}
-				
-				return json_attrs;
-			}
+	                    node_val.inner = GetNodes(node.childNodes);
+	                    node_val.attributes = getAttributes(node);
+	                }
+	                obj[i] = node_val;
+	            }
+	            return obj === {} ? undefined : obj;
+	        }
 	        
-			return GetNodes(html_childs);
-		};
+	        function getAttributes(node) {
+	            var json_attrs = [];
+	            var attrs = node.attributes;
+	            if (attrs) {
+	                for (var i = 0; i < attrs.length; i++) {
+	                    var attr = attrs[i];
+	                    json_attrs.push({ name: attr.name, value: attr.nodeValue });
+	                }    
+	            }
+	            return json_attrs;
+	        }
+	        
+	        return GetNodes(html_childs);
+	    };
 	    
-		/**
-		 * Processes HTML json object to document definition of pdfmake
+	    /**
+	     * Processes HTML json object to document definition of pdfmake
 	     * 
-		 * @param {string} json Contains json object of HTML markup
+	     * @param {string} json Contains json object of HTML markup
 	     * @param {object} settings Contains optional object with additional settings
-		 * @return {object} Returns stack with document definition of pdfmake
-		 */
-		var JSON2DocDef = function(json, settings) {
-			var obj = { stack: [] };
+	     * @return {object} Returns stack with document definition of pdfmake
+	     */
+	    var JSON2DocDef = function(json, settings) {
+	        var obj = { stack: [] };
 	        
-			function getNodes(n) {
-				var keys = Object.keys(n);
-				for (var i = 0; i < keys.length; i++) {
-					var node = n[keys[i]];
-					var elm = getHTMLTagByNodeType(node);
+	        function getNodes(n) {
+	            var keys = Object.keys(n);
+	            for (var i = 0; i < keys.length; i++) {
+	                var node = n[keys[i]];
+	                var elm = getHTMLTagByNodeType(node);
 	                if (elm !== undefined) {
 	                    processAdditionalStackNodeSettings(settings, elm);
 	                    obj.stack.push(elm);
 	                }
 	                if (node.inner) {
-	                    getNodes(node.inner);   
+	                    getNodes(node.inner);
 	                }
-				}
-			}
+	            }
+	        }
 
 	        getNodes(json);
-	        		
-			return obj;
-		};
+	                
+	        return obj;
+	    };
 	    
 	    /**
 	     * Processes additional stack node settings
@@ -97656,24 +97657,26 @@
 	     * @param {object} content Contains document definition content of pdfmake
 	     */
 	    var processDocumentDefinition = function(content) {
-	        for (var i = 0; i < content.length; i++) {
-	            if (content[i] && typeof content[i] === 'object') {
-	                var html = content[i].html; 
-	                if (content[i].hasOwnProperty('html') || typeof html !== 'undefined') {
-	                    var stack = getDocumentDefinitionFromHtmlMarkup(html, content[i].settings || {});
-	                    if (!stack) {
-	                        stack = { text: '' };
+	        if (content) {
+	            for (var i = 0; i < content.length; i++) {
+	                if (content[i] && typeof content[i] === 'object') {
+	                    var html = content[i].html; 
+	                    if (content[i].hasOwnProperty('html') || typeof html !== 'undefined') {
+	                        var stack = getDocumentDefinitionFromHtmlMarkup(html, content[i].settings || {});
+	                        if (!stack) {
+	                            stack = { text: '' };
+	                        }
+	                        copyPropertiesToTargetStack(content[i], stack);
+	                        content[i] = stack;
 	                    }
-	                    copyPropertiesToTargetStack(content[i], stack);
-	                    content[i] = stack;
+	                    else {
+	                        var subs = getChildrenNode(content[i]);
+	                        if (typeof subs === 'object') {
+	                            processDocumentDefinition(subs);
+	                        }   
+	                    }
 	                }
-	                else {
-	                    var subs = getChildrenNode(content[i]);
-	                    if (typeof subs === 'object') {
-	                        processDocumentDefinition(subs);
-	                    }   
-	                }
-	            }
+	            }    
 	        }   
 	    };
 	    
