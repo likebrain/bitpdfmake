@@ -561,10 +561,43 @@ LayoutBuilder.prototype.buildNextLine = function(textNode) {
 	while(textNode._inlines && textNode._inlines.length > 0 && line.hasEnoughSpaceForInline(textNode._inlines[0])) {
 		line.addInline(textNode._inlines.shift());
 	}
+    
+    this.concatenateNonLatinInlines(line);
 
 	line.lastLineInParagraph = textNode._inlines.length === 0;
 
 	return line;
+};
+
+LayoutBuilder.prototype.concatenateNonLatinInlines = function(line) {
+    var idx, current, inlines = [];
+    for (var i = 0; i < line.inlines.length; i++) {
+        var inline = line.inlines[i];
+        if (!(/^[A-z\u00C0-\u00ff\s'\.,-\/#!$%\^&\*;:{}=\-_`~()]+$/g).test(inline.text)) {
+            if (!current) {
+                current = inline;
+            }
+            else {
+                current.text = current.text + inline.text;
+                current.width = current.width + inline.width;
+            }
+        }
+        else { 
+            if (current) {
+                inlines.push(current);
+                current = null;
+            }
+            inlines.push(inline);
+        }
+    }
+
+    if (current) {
+        inlines.push(current);
+    }
+
+    if (inlines.length > 0) {
+        line.inlines = inlines;
+    }
 };
 
 // images

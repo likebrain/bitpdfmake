@@ -23,6 +23,7 @@
     "gulp-util": "^3.0.4",
     "gulp-webpack": "^1.4.0",
     "json-loader": "^0.5.1",
+    "linebreak": "^0.3.0",
     "sinon": "~1.12.2",
     "string-replace-webpack-plugin": "0.0.1",
     "webpack": "^1.8.9"

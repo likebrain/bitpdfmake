@@ -1,6 +1,8 @@
 /* jslint node: true */
 'use strict';
 
+var LineBreaker = require('linebreak');
+
 var WORD_RE = /([^ ,\/!.?:;\-\n]*[ ,\/!.?:;\-]*)|\n/g;
 // /\S*\s*/g to be considered (I'm not sure however - we shouldn't split 'aaa !!!!')
 
@@ -100,7 +102,7 @@ function splitWords(text, noWrap) {
 	if (noWrap) {
 		array = [ text, "" ];
 	} else {
-		array = text.match(WORD_RE);
+		array = splitWordsWithLineBreak(text);
 	}
 	// i < l - 1, because the last match is always an empty string
 	// other empty strings however are treated as new-lines
@@ -124,6 +126,24 @@ function splitWords(text, noWrap) {
 		}
 	}
 	return results;
+}
+
+function splitWordsWithLineBreak(text) {
+	var breaker = new LineBreaker(text);
+	var last = 0, bk, result = [];
+
+	while (bk = breaker.nextBreak()) {
+		var word = text.slice(last, bk.position);
+		result.push(word);
+		for (var i = 0; i < (word.match(/\n/g)||[]).length; i++) {
+			result.push('');
+		}
+		last = bk.position;
+	}
+
+	result.push('');
+
+	return result;
 }
 
 function copyStyle(source, destination) {
